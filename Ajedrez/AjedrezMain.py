@@ -31,14 +31,18 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     gs = AjedrezEngine.GameState()
+    validMoves = gs.getValidMoves()
+    moveMade = False # variable para cuando ya se ha hecho un movimiento
     loadImages() #Solo hacer esto una vez antes del bucle while
     running = True
     sqSelected = () #Ningún cuadro seleccionado
     playerClicks = [] #Mantiene la información de los clicks del jugador
+
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
+                #Mouse handler
             elif e.type == p.MOUSEBUTTONDOWN:
                 location = p.mouse.get_pos() #(x, y) localización del ratón
                 col = location[0]//SQ_SIZE
@@ -52,9 +56,20 @@ def main():
                 if len(playerClicks) == 2: #Después del segundo click
                     move = AjedrezEngine.Move(playerClicks[0], playerClicks[1], gs.board)
                     print(move.getChessNotation())
-                    gs.makeMove(move)
+                    if move in validMoves:
+                        gs.makeMove(move)
+                        moveMade = True
                     sqSelected = ()
                     playerClicks = []
+            #Key handlers
+            elif e.type == p.KEYDOWN:
+                if e.key == p.K_z: #Eliminar cuando z está presente
+                    gs.undoMove()
+                    moveMade = True
+
+        if moveMade:
+            validMoves =gs.getValidMoves()
+            moveMade = False
 
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
