@@ -33,10 +33,29 @@ def main():
     gs = AjedrezEngine.GameState()
     loadImages() #Solo hacer esto una vez antes del bucle while
     running = True
+    sqSelected = () #Ningún cuadro seleccionado
+    playerClicks = [] #Mantiene la información de los clicks del jugador
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
+            elif e.type == p.MOUSEBUTTONDOWN:
+                location = p.mouse.get_pos() #(x, y) localización del ratón
+                col = location[0]//SQ_SIZE
+                row = location[1]//SQ_SIZE
+                if sqSelected == (row, col):#Si el usuario pisa el mismo cuadrdo más de una vez
+                    sqSelected = () #Desseleccionar
+                    playerClicks = [] #Borrar clicks del jugador
+                else:
+                    sqSelected = (row, col)
+                    playerClicks.append(sqSelected)
+                if len(playerClicks) == 2: #Después del segundo click
+                    move = AjedrezEngine.Move(playerClicks[0], playerClicks[1], gs.board)
+                    print(move.getChessNotation())
+                    gs.makeMove(move)
+                    sqSelected = ()
+                    playerClicks = []
+
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
         p.display.flip()
