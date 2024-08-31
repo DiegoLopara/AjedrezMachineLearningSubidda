@@ -42,7 +42,7 @@ class GameState():
     Todos los movimientos considerados jaque
     '''
     def getValidMoves(self):
-        return self.getAllPossibleMoves() #Por ahora es todo sin jaque mate
+        return self.getAllPossibleMoves() #Por ahora es sin jaque mate
 
     '''
     Todos los movimientos no considerados jaque
