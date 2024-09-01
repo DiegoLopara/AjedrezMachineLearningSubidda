@@ -13,7 +13,7 @@ class GameState():
             ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "wR", "--", "--", "bB", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
@@ -77,37 +77,96 @@ class GameState():
                     moves.append(Move((r, c), (r-1, c+1), self.board))
 
         else: #Se mueve el peón negro
-            pass
+            if self.board[r+1][c] == "--": #1 solo movimiento
+                moves.append(Move((r, c), (r+1, c), self.board))
+                if r == 1 and self.board[r + 2][c] == "--": #2 Movimientos de peón
+                    moves.append(Move((r, c), (r + 2, c), self.board))
+            #Capturas de peón
+            if c-1 >= 0: #Capturar a la iizquierda
+                if self.board[r + 1][c - 1][0] == 'w':
+                    moves.append(Move((r, c), (r + 1, c - 1), self.board))
+            if c + 1 <= 7: #Capturar a la derecha
+                if self.board[r + 1][c + 1][0] == 'w':
+                    moves.append(Move((r, c), (r + 1, c + 1), self.board))
 
     '''
     Coger todos los movimientos de la torre y añadirlos a una lista
     '''
     def getRookMoves(self, r, c, moves):
-        pass
+        directions = ((-1, 0), (0, -1), (1, 0), (0, 1)) #Arriba, abajo, izquierda, derecha
+        enemyColor = "b" if self.whiteToMove else "w"
+        for d in directions:
+            for i in range(1, 8):
+                endRow = r + d[0] * i
+                endCol = c + d[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8: #En el tablero
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece == "--": #Espacio vacío válido
+                        moves.append(Move((r, c), (endRow, endCol), self.board))
+                    elif endPiece[0] == enemyColor: #Pieza enemiga válida
+                        moves.append(Move((r, c), (endRow, endCol), self.board))
+                        break
+                    else: #Pieza amiga inválida
+                        break
+                else: #Fin de tablero
+                    break
 
     '''
    Coger todos los movimientos de la Knight y añadirlos a una lista
    '''
     def getKnightMoves(self, r, c, moves):
-        pass
+        KnightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
+        allyColor = "w" if self.whiteToMove else "b"
+        for m in KnightMoves:
+            endRow = r + m[0]
+            endCol = c + m[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != allyColor: #Vacío o pieeza enemiga
+                    moves.append(Move((r, c), (endRow, endCol), self.board))
 
     '''
    Coger todos los movimientos de la Bishop y añadirlos a una lista
    '''
     def getBishopMoves(self, r, c, moves):
-        pass
+        directions = ((-1, -1), (-1, 1), (1, -1), (1, 1)) #4 direcciones
+        enemyColor = "b" if self.whiteToMove else "w"
+        for d in directions:
+            for i in range(1, 8): #El alfil puede moverse como máximo 7 posiciones
+                endRow = r + d[0] * i
+                endCol = c + d[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8: #Si está en el tablero
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece == "--": #Espacio vacío válido
+                        moves.append(Move((r, c), (endRow, endCol), self.board))
+                    elif endPiece[0] == enemyColor: #Pieza enemiga válida
+                        moves.append(Move((r, c), (endRow, endCol), self.board))
+                        break
+                    else: #Pieza amiga inválida
+                        break
+                else: #Fuera de tablero
+                    break
 
     '''
    Coger todos los movimientos de la Queen y añadirlos a una lista
    '''
     def getQueenMoves(self, r, c, moves):
-        pass
+        self.getRookMoves(r, c, moves)
+        self.getBishopMoves(r, c, moves)
 
     '''
    Coger todos los movimientos de el King y añadirlos a una lista
    '''
     def getKingMoves(self, r, c, moves):
-        pass
+        KingMoves = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
+        allyColor = "w" if self.whiteToMove else "b"
+        for i in range(8):
+            endRow = r + KingMoves[i][0]
+            endCol = c + KingMoves[i][1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != allyColor: #Vacío o pieza enemiga
+                    moves.append(Move((r, c), (endRow, endCol), self.board))
 
 class Move():
 

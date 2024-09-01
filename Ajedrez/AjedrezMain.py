@@ -59,8 +59,10 @@ def main():
                     if move in validMoves:
                         gs.makeMove(move)
                         moveMade = True
-                    sqSelected = ()
-                    playerClicks = []
+                        sqSelected = ()
+                        playerClicks = []
+                    else:
+                        playerClicks = [sqSelected]
             #Key handlers
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z: #Eliminar cuando z está presente
