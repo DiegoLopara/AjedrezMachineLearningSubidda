@@ -13,10 +13,13 @@ class GameState():
             ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "wR", "--", "--", "bB", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
+        self.moveFunctions = {'p': self.getPawnMoves, 'R': self.getRookMoves, 'N': self.getKnightMoves,
+                              'B': self.getBishopMoves, 'Q': self.getQueenMoves, 'K': self.getKingMoves}
+
         self.whiteToMove = True
         self.moveLog = []
 
@@ -48,28 +51,62 @@ class GameState():
     Todos los movimientos no considerados jaque
     '''
     def getAllPossibleMoves(self):
-        moves = [Move((6,4), (4,4), self.board)]
+        moves = []
         for r in range(len(self.board)):#Nº de filas
             for c in range(len(self.board[r])): #Nº de columnas
                 turn = self.board[r][c][0]
-                if (turn == 'w' and self.whiteToMove) and (turn == 'b' and not self.whiteToMove):
+                if (turn == 'w' and self.whiteToMove) or (turn == 'b' and not self.whiteToMove):
                     piece = self.board[r][c][1]
-                    if piece == 'p':
-                        self.getPawnMoves(r, c, moves)
-                    elif piece == 'R':
-                        self.getRookMoves(r, c, moves)
+                    self.moveFunctions[piece](r, c, moves) #LLama a la función apropiada para mover la pieza
         return moves
 
     '''
     Coger todos los movimientos del peón y añadirlos a una lista
     '''
     def getPawnMoves(self, r, c, moves):
-        pass
+        if self.whiteToMove: #El peón blanco se mueve
+            if self.board[r-1][c] == "--": #Se avanza un cuadrado
+                moves.append(Move((r, c), (r-1, c), self.board))
+                if r == 6 and self.board[r-2][c] == "--": #El peón avanza dos posiciones
+                    moves.append(Move((r, c), (r-2, c), self.board))
+            if c-1 >= 0:#Se captura a la izquierda
+                if self.board[r-1][c-1][0] == 'b': #Se captura pieza del enemigo
+                    moves.append(Move((r, c), (r-1, c-1), self.board))
+            if c+1 <= 7: #Se captura a la derecha
+                if self.board[r-1][c+1][0] == 'b': #Se captura pieza del enemigo
+                    moves.append(Move((r, c), (r-1, c+1), self.board))
+
+        else: #Se mueve el peón negro
+            pass
 
     '''
     Coger todos los movimientos de la torre y añadirlos a una lista
     '''
     def getRookMoves(self, r, c, moves):
+        pass
+
+    '''
+   Coger todos los movimientos de la Knight y añadirlos a una lista
+   '''
+    def getKnightMoves(self, r, c, moves):
+        pass
+
+    '''
+   Coger todos los movimientos de la Bishop y añadirlos a una lista
+   '''
+    def getBishopMoves(self, r, c, moves):
+        pass
+
+    '''
+   Coger todos los movimientos de la Queen y añadirlos a una lista
+   '''
+    def getQueenMoves(self, r, c, moves):
+        pass
+
+    '''
+   Coger todos los movimientos de el King y añadirlos a una lista
+   '''
+    def getKingMoves(self, r, c, moves):
         pass
 
 class Move():
@@ -89,7 +126,6 @@ class Move():
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
         self.moveId = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
-        print(self.moveId)
 
     '''
     Anular los movimientos iguales
