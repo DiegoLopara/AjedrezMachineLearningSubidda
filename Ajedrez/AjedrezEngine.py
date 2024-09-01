@@ -22,12 +22,22 @@ class GameState():
 
         self.whiteToMove = True
         self.moveLog = []
+        self.whiteKingLocation = (7, 4)
+        self.blackKingLocation = (0, 4)
+        self.checkMate = False
+        self.staleMate = False
+
 
     def makeMove(self, move):
         self.board[move.startRow][move.startCol] = "--"
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.moveLog.append(move) #Para poder revertir el movimiento
         self.whiteToMove = not self.whiteToMove #Cambiar de jugador
+        #Modificar la posición del rey si se mueve
+        if move.pieceMoved == 'wK':
+            self.whiteKingLocation = (move.endRow, move.endCol)
+        elif move.pieceMoved == 'bK':
+            self.blackKingLocation = (move.endRow, move.endCol)
 
 
     '''
@@ -40,12 +50,60 @@ class GameState():
             self.board[move.startRow][move.startCol] = move.pieceMoved
             self.board[move.endRow][move.endCol] = move.pieceCaptured
             self.whiteToMove = not self.whiteToMove #Cambiar de turno
+            #Cambiar la posición del rey si es necesario
+            if move.pieceMoved == 'wK':
+                self.whiteKingLocation = (move.startRow, move.startCol)
+            elif move.pieceMoved == 'bK':
+                self.blackKingLocation = (move.startRow, move.startCol)
 
     '''
     Todos los movimientos considerados jaque
     '''
     def getValidMoves(self):
-        return self.getAllPossibleMoves() #Por ahora es sin jaque mate
+        #1.)Generar todos los movimientos posibles
+        moves = self.getAllPossibleMoves()
+        #2.) Por cada movimiento, hacer hacer el movimiento
+        for i in range(len(moves)-1, -1, -1): #Cuando elimino un elemento de la lista, vuelvo atrás en esa misma lista
+            self.makeMove(moves[i])
+            #3.) Generar todos los movimientos del oponente
+            #4.) Para cada uno de los movimientos del oponente, ver si estos atacan a mi rey
+            self.whiteToMove = not self.whiteToMove #Cambiar turno
+            if self.inCheck():
+                moves.remove(moves[i])  #5.) Si los movimientos atacan a mi rey, no son movimientos válidos
+            self.whiteToMove = not self.whiteToMove #Cambiar turno
+            self.undoMove()
+        if len(moves) == 0: #Jaque mate o tablas
+            if self.inCheck():
+                self.checkMate = True
+            else:
+                self.staleMate = True
+        else:
+            self.checkMate = False
+            self.staleMate = False
+
+        return moves
+
+    '''
+    Determinar si el jugador está en jaque
+    '''
+    def inCheck(self):
+        if self.whiteToMove:
+            return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
+        else:
+            return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
+
+    '''
+    Determinar si el jugador puede atacar el cuadrado r, c
+    '''
+    def squareUnderAttack(self, r, c):
+        self.whiteToMove = not self.whiteToMove #Cambiar el turno
+        oppMoves = self.getAllPossibleMoves()
+        self.whiteToMove = not self.whiteToMove #Cambiar turnos
+        for move in oppMoves:
+            if move.endRow == r and move.endCol == c: #Cuadrado bajo ataque
+                self.whiteToMove = not self.whiteToMove #Cambiar turnos
+                return True
+        return False
 
     '''
     Todos los movimientos no considerados jaque
